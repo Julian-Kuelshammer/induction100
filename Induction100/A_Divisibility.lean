@@ -106,8 +106,8 @@ induction n with
 | zero => norm_num
 | succ n ih =>
   obtain ⟨m,hm⟩ := ih
-  use 7 ^ (2 * n) + 2 * m
-  rw [mul_add 47, ← mul_assoc, mul_comm 47 2, mul_assoc, ← hm]
+  use 7 ^ (2 * n) + m * 2
+  rw [mul_add 47, ← mul_assoc, ← hm]
   ring
 
 /- 10) 5ⁿ + 7 is divisible by 4. -/
@@ -126,8 +126,8 @@ induction n with
 | zero => norm_num
 | succ n ih =>
   obtain ⟨m,hm⟩ := ih
-  use 2 * 5 ^ (2 * n) + 9 * m
-  rw [mul_add 8, ← mul_assoc 8 9, mul_comm 8 9, mul_assoc, ← hm]
+  use 2 * 5 ^ (2 * n) + m * 9
+  rw [mul_add 8, ← mul_assoc 8 m, ← hm]
   ring
 
 /- 12) 2³ⁿ + 13 is divisible by 7. -/
@@ -167,8 +167,8 @@ induction n with
 | zero => norm_num
 | succ n ih =>
   obtain ⟨m,hm⟩ := ih
-  use 2 ^ (3 * n + 1) + 3 * m
-  rw [mul_add 5, ← mul_assoc, mul_comm 5 3, mul_assoc, ← hm]
+  use 2 ^ (3 * n + 1) + m * 3
+  rw [mul_add 5, ← mul_assoc, ← hm]
   ring
 
 /- 16) 3n⁵ + 5n³ + 7n is divisible by 15. -/
@@ -248,4 +248,94 @@ induction n with
   use l + m
   rw [mul_add, ← hm, ← hl]
   push_cast
+  ring
+
+/- 22) 5²ⁿ + 24n -1 is divisible by 48. -/
+lemma helper48 : (48 : ℤ) ∣ 24 * 5 ^ (2 * n) + 24 := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  use 12 * 5 ^ (2 * n) + m
+  rw [mul_add 48, ← hm]
+  ring
+
+example : 48 ∣ (5 ^ (2 * n) + 24 * n - 1 : ℤ) := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  obtain ⟨l,hl⟩ := helper48 n
+  use l + m
+  rw [mul_add 48, ← hl, ← hm]
+  push_cast
+  ring
+
+/- 23) 11ⁿ⁺¹ + 12²ⁿ⁻¹ is divisible by 133. -/
+example : 133 ∣ 11 ^ (n + 2) + 12 ^ (2 * n + 1) := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  use 12 ^ (2 * n + 1) + m * 11
+  rw [mul_add 133, ← mul_assoc, ← hm]
+  ring
+
+/- 24) (2a-1)ⁿ - 1 is even. -/
+example (a : ℕ) : 2 ∣ ((2 * a + 1) ^ n - 1 : ℤ) := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  use a * (2 * a + 1) ^ n + m
+  rw [mul_add 2, ← hm]
+  ring
+
+/- 25) aⁿ⁺¹ + (a + 1)²ⁿ⁻¹ is divisible by a² + a + 1. -/
+example (a : ℕ) : a ^ 2 + a + 1 ∣ a ^ (n + 2) + (a + 1) ^ (2 * n + 1) := by
+induction n with
+| zero => use 1
+          ring
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  use (a + 1) ^ (2 * n + 1) + m * a
+  rw [mul_add _ _ (m * a), ← mul_assoc, ← hm]
+  ring
+
+/- 26) a²ⁿ⁺¹ - a is divisible by 6. -/
+lemma helper6a : 6 ∣ ((n ^ 2 - 1) * n : ℤ) := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  have := even_sq_add_self n
+  obtain ⟨l,hl⟩ := this
+  obtain ⟨m,hm⟩ := ih
+  have : (6 * l : ℤ) = 3 * (n ^ 2 + n) := by
+    rw_mod_cast [hl]
+    ring
+  use l + m
+  rw [mul_add, ← hm, this]
+  push_cast
+  ring
+
+lemma helper6b (a : ℕ) : 6 ∣ ((a ^ 2 - 1) * a ^ (2 * n + 1) : ℤ) := by
+induction n with
+| zero => rw [mul_zero, zero_add, pow_one]
+          exact helper6a a
+| succ n ih =>
+  have := helper6a a
+  obtain ⟨l,hl⟩ := this
+  obtain ⟨m,hm⟩ := ih
+  use l * ((a ^ 2 - 1) * a ^ (2 * n)) + m
+  rw [mul_add 6, ← mul_assoc, ← hl, ← hm]
+  ring
+
+example (a : ℕ) : 6 ∣ (a ^ (2 * n + 1) - a : ℤ) := by
+induction n with
+| zero => norm_num
+| succ n ih =>
+  obtain ⟨m,hm⟩ := ih
+  obtain ⟨l,hl⟩ := helper6b n a
+  use l + m
+  rw [mul_add 6, ← hm, ← hl]
   ring
