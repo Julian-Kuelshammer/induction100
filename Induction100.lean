@@ -1,1 +1,1 @@
-import Induction100.A_Divisibility.lean
+import Induction100.A_Divisibility
